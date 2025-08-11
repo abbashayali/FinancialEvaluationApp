@@ -5,11 +5,11 @@ namespace FinancialEvaluationApp.Models.Core
 {
     public abstract class BaseEntity
     {
-        [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+        public Guid Id { get; set; }
+        public DateTimeOffset CreatedAt { get; set; } // مقدارش را DB می‌گذارد
         public DateTimeOffset? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
     }
+
 }
+

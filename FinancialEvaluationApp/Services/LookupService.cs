@@ -29,11 +29,9 @@ namespace FinancialEvaluationApp.Services
 
         public async Task<IReadOnlyList<Currency>> GetActiveCurrenciesAsync()
         {
-            // اگر در کش هست، همان را بده
-            if (_cache.TryGetValue(CurrencyCacheKey, out IReadOnlyList<Currency> cached))
+            if (_cache.TryGetValue(CurrencyCacheKey, out IReadOnlyList<Currency>? cached) && cached is not null)
                 return cached;
 
-            // در غیر این صورت از دیتابیس بگیر و در کش ذخیره کن
             var list = await _db.Currencies
                 .Where(x => x.IsActive)
                 .OrderBy(x => x.SortOrder)
@@ -41,9 +39,11 @@ namespace FinancialEvaluationApp.Services
                 .AsNoTracking()
                 .ToListAsync();
 
-            _cache.Set(CurrencyCacheKey, list, TimeSpan.FromMinutes(30));
-            return list;
+            IReadOnlyList<Currency> result = list; // non-null
+            _cache.Set(CurrencyCacheKey, result, TimeSpan.FromMinutes(30));
+            return result;
         }
+
 
         public Task ClearCurrencyCacheAsync()
         {

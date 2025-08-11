@@ -9,11 +9,11 @@ namespace FinancialEvaluationApp.Models.Core
     {
         [Required]
         public Guid TenderId { get; set; }
-        public Tender Tender { get; set; }
+        public Tender Tender { get; set; } = null!;
 
         [Required]
         public Guid BidderId { get; set; }
-        public Bidder Bidder { get; set; }
+        public Bidder Bidder { get; set; } = null!;
 
         [Required]
         public ProposalType Type { get; set; }
@@ -25,13 +25,13 @@ namespace FinancialEvaluationApp.Models.Core
         public decimal? ForeignAmount { get; set; }
 
         public Guid? ForeignCurrencyId { get; set; }
-        public Currency ForeignCurrency { get; set; }
+        public Currency ForeignCurrency { get; set; } = null!;
 
         [Column(TypeName = "decimal(18,6)")]
         public decimal? FxRate { get; set; }
 
         [MaxLength(100)]
-        public string ProposalNo { get; set; }
+        public string ProposalNo { get; set; } =string.Empty; 
 
         public DateTimeOffset SubmittedAt { get; set; } = DateTimeOffset.UtcNow;
 

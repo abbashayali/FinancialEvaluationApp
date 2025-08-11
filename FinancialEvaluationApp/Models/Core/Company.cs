@@ -7,13 +7,13 @@ namespace FinancialEvaluationApp.Models.Core
     public class Company : BaseEntity
     {
         [Required, MaxLength(200)]
-        public string Name { get; set; }
+        public string Name { get; set; }=string.Empty;
 
         [MaxLength(50)]
-        public string RegistrationNo { get; set; }
+        public string RegistrationNo { get; set; }=string.Empty ;
 
         public Guid? ParentCompanyId { get; set; }
-        public Company ParentCompany { get; set; }
+        public Company? ParentCompany { get; set; }
 
         public ICollection<Company> Subsidiaries { get; set; } = new List<Company>();
         public ICollection<Tender> Tenders { get; set; } = new List<Tender>();

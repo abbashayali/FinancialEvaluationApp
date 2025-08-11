@@ -4,6 +4,7 @@ using FinancialEvaluationApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinancialEvaluationApp.Migrations
 {
     [DbContext(typeof(FinancialEvaluationDbContext))]
-    partial class FinancialEvaluationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250811173541_Fix_Static_Seed_And_Defaults")]
+    partial class Fix_Static_Seed_And_Defaults
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,11 +96,8 @@ namespace FinancialEvaluationApp.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTimeOffset?>("LastLoginDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("MustChangePassword")
-                        .HasColumnType("bit");
+                    b.Property<DateTime?>("LastLoginDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -130,7 +130,6 @@ namespace FinancialEvaluationApp.Migrations
                             FullName = "System Administrator",
                             IsActive = true,
                             IsDeleted = false,
-                            MustChangePassword = true,
                             PasswordHash = "$2a$11$7WZq9v8m2fX2b9rXrVjZzO8a1yCqC6c7nG3Z1m0i9xUj2QxQyXj/S",
                             RoleId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                             Username = "admin"
