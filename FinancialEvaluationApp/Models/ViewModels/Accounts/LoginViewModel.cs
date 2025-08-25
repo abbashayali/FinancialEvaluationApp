@@ -15,5 +15,7 @@ namespace FinancialEvaluationApp.Models.ViewModels.Accounts
 
         [Display(Name = "مرا به خاطر بسپار")]
         public bool RememberMe { get; set; }
+
+        public string? ReturnUrl { get; set; }
     }
 }

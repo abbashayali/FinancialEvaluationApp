@@ -1,0 +1,20 @@
+﻿# Visual Studio
+.vs/
+*.vscode/
+*.user
+*.suo
+
+#Build
+bin/
+obj/
+
+#Logs
+*.log
+
+#Certificates
+*.pfx
+*.cer
+*.key
+
+#Other
+appsettings.Development.json

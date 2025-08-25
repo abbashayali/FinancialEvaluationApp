@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FinancialEvaluationApp.Data;
 using FinancialEvaluationApp.Models.ViewModels;
+using FinancialEvaluationApp.Models.ViewModels.Accounts;
 
 namespace FinancialEvaluationApp.Controllers
 {
@@ -27,12 +28,12 @@ namespace FinancialEvaluationApp.Controllers
             if (User.Identity?.IsAuthenticated == true)
                 return Redirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
 
-            return View(new LoginVm { ReturnUrl = returnUrl });
+            return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginVm vm)
+        public async Task<IActionResult> Login(LoginViewModel vm)
         {
             if (!ModelState.IsValid) return View(vm);
 
@@ -43,8 +44,9 @@ namespace FinancialEvaluationApp.Controllers
                 return View(vm);
             }
 
+            var inputUsername = (vm.Username ?? string.Empty).Trim().ToLower();
             var user = await _db.AppUsers.Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == vm.Username && u.IsActive);
+                .FirstOrDefaultAsync(u => u.Username.ToLower() == inputUsername && u.IsActive);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(vm.Password, user.PasswordHash))
             {
@@ -80,28 +82,31 @@ namespace FinancialEvaluationApp.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult ChangePassword() => View(new ChangePasswordVm());
+        public IActionResult ChangePassword() => View(new ChangePasswordViewModel());
+
 
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(ChangePasswordVm vm)
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel vm)
         {
             if (!ModelState.IsValid) return View(vm);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userId is null) return Unauthorized();
 
-            var uid = Guid.Parse(userId);
+            var uid = Guid.Parse(userId.Value);
             var user = await _db.AppUsers.FindAsync(uid);
             if (user is null) return Unauthorized();
 
+            // بررسی رمز فعلی
             if (!BCrypt.Net.BCrypt.Verify(vm.CurrentPassword, user.PasswordHash))
             {
                 ModelState.AddModelError("", "رمز فعلی درست نیست.");
                 return View(vm);
             }
 
+            // سیاست ساده: حداقل ۱۲ کاراکتر
             if (vm.NewPassword.Length < 12)
             {
                 ModelState.AddModelError("", "رمز جدید باید حداقل ۱۲ کاراکتر باشد.");
@@ -111,6 +116,7 @@ namespace FinancialEvaluationApp.Controllers
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(vm.NewPassword);
             user.MustChangePassword = false;
             user.LastLoginDate = DateTimeOffset.UtcNow;
+
             await _db.SaveChangesAsync();
 
             TempData["msg"] = "رمز عبور با موفقیت تغییر کرد.";
@@ -123,7 +129,7 @@ namespace FinancialEvaluationApp.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction(nameof(Login));
+            return RedirectToAction("Login","Account");
         }
 
         public IActionResult AccessDenied() => View();
