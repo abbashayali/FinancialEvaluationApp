@@ -1,4 +1,4 @@
-html {
+﻿html {
   font-size: 14px;
 }
 
@@ -19,4 +19,45 @@ html {
 
 body {
   margin-bottom: 60px;
+}
+/* تیتر ملایم برای همه‌ی جدول‌ها */
+.thead-soft th {
+    background-color: #f1f5f9 !important; /* روشن و چشم‌نواز */
+    color: #334155; /* slate-700 */
+    font-weight: 700;
+    letter-spacing: .2px;
+    border-bottom: 2px solid rgba(var(--bs-primary-rgb), .45);
+}
+
+/* اختیاری: هدر چسبان وقتی جدول اسکرول می‌خورد */
+.table.sticky-head thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+/* Nuke Rule: اطمینان از اعمال رنگ ملایم */
+table.users-table > thead.thead-soft > tr > th {
+    background-color: #f1f5f9 !important;
+    color: #334155 !important;
+}
+/* تم ملایمِ primary برای هدر جدول */
+.thead-primary th {
+    background-color: rgba(var(--bs-primary-rgb), .12) !important;
+    color: #0f172a !important;
+    font-weight: 700;
+    border-bottom: 2px solid rgba(var(--bs-primary-rgb), .45);
+}
+
+/* تم تمام‌پررنگِ primary برای هدر جدول */
+.thead-primary-solid th {
+    background-color: var(--bs-primary) !important;
+    color: #fff !important;
+    font-weight: 700;
+    border-bottom: 2px solid rgba(var(--bs-primary-rgb), .45);
+}
+
+/* تضمینی (در صورت تداخل): برای جدول کاربران با sticky */
+table.users-table > thead.thead-primary > tr > th,
+table.users-table > thead.thead-primary-solid > tr > th {
+    background-clip: padding-box;
 }

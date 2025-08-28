@@ -1,0 +1,125 @@
+﻿/* ===========================
+   Users Page – Clean Styles
+   =========================== */
+
+/* فونت فقط برای صفحه کاربران */
+.users-page {
+    font-family: 'Vazirmatn', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Arabic", Arial, sans-serif;
+}
+
+    /* کارت و ظرف جدول */
+    .users-page .users-card {
+        border-radius: .5rem;
+        overflow: hidden;
+    }
+
+    .users-page .users-wrap {
+        max-height: 60vh;
+        overflow: auto;
+    }
+
+    /* جدول و هدر چسبان (بدون رنگ پس‌زمینه؛ رنگ را با کلاس روی <thead> بده) */
+    .users-page .users-table {
+        table-layout: fixed; /* تا عرض ستون‌ها دقیق اعمال شود */
+    }
+
+        .users-page .users-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            color: #334155; /* slate-ish */
+            font-weight: 700;
+            letter-spacing: .2px;
+            border-bottom: 2px solid rgba(var(--bs-primary-rgb), .45);
+        }
+
+    /* کنترل عرض ستون‌ها */
+    .users-page .col-idx {
+        width: 60px;
+    }
+
+    .users-page .col-username {
+        width: 20%;
+    }
+
+    .users-page .col-fullname {
+        width: 26%;
+    }
+
+    .users-page .col-role {
+        width: 12%;
+    }
+
+    .users-page .col-status {
+        width: 12%;
+    }
+
+    .users-page .col-lastlogin {
+        width: 18%;
+    }
+
+    .users-page .col-actions {
+        width: 180px;
+        white-space: nowrap;
+    }
+
+    /* وسط‌چینِ دقیق برای ستون‌های نام کاربری و نام کامل (Header + Cells) */
+    .users-page .users-table th.col-username,
+    .users-page .users-table td.col-username,
+    .users-page .users-table th.col-fullname,
+    .users-page .users-table td.col-fullname {
+        text-align: center;
+    }
+
+    /* نمایش تمیز متن‌های بلند */
+    .users-page .text-clip {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* گروه دکمه‌های عملیات در یک خط با فاصله استاندارد */
+    .users-page .btn-actions {
+        display: inline-flex;
+        gap: .5rem;
+        flex-wrap: nowrap;
+    }
+
+    /* عنوان‌ها با آیکون (اختیاری) */
+    .users-page .th-with-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+        .users-page .th-with-icon i {
+            font-size: 1rem;
+            opacity: .85;
+        }
+
+/* ---------------------------------
+   نکته:
+   - برای رنگ پس‌زمینهٔ تیترها، روی <thead> از کلاس‌های عمومی استفاده کن،
+     مثلاً در site.css یک کلاس مثل .thead-soft ساختیم:
+       <thead class="text-center thead-soft">
+   - اگر تم دیگری خواستی، فقط کلاس <thead> را عوض کن.
+   --------------------------------- */
+
+    /* لینک‌های داخل تیتر جدول: رنگ و چینش */
+    .users-page .users-table thead th .th-link {
+        color: inherit;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+        .users-page .users-table thead th .th-link:hover {
+            text-decoration: underline;
+        }
+
+    .users-page .users-table thead th .bi-caret-up-fill,
+    .users-page .users-table thead th .bi-caret-down-fill {
+        opacity: .85;
+        font-size: .9rem;
+    }
