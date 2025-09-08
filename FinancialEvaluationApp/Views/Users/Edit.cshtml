@@ -1,0 +1,71 @@
+﻿@model FinancialEvaluationApp.ViewModels.Users.UserEditVm
+@{
+    ViewData["Title"] = "ویرایش کاربر";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+}
+
+<div class="users-page container mt-4" dir="rtl">
+    <div class="card shadow-sm">
+        <div class="card-header thead-primary">
+            <h5 class="mb-0">ویرایش کاربر</h5>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="Edit" method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">نام کاربری</label>
+                        <input class="form-control" value="@Model.Username" disabled />
+                        <div class="form-text">نام کاربری قابل تغییر نیست.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="RoleId" class="form-label"></label>
+                        <select asp-for="RoleId" class="form-select" asp-items="ViewBag.Roles">
+                            <option value="">— انتخاب نقش —</option>
+                        </select>
+                        <span asp-validation-for="RoleId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3 form-check form-switch mt-4">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+
+                    <div class="col-md-3 form-check form-switch mt-4">
+                        <input asp-for="MustChangePassword" class="form-check-input" />
+                        <label asp-for="MustChangePassword" class="form-check-label"></label>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a asp-action="Index" class="btn btn-light">
+                        <i class="bi bi-arrow-right-short"></i> بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2"></i> ذخیره
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

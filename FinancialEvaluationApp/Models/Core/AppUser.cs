@@ -10,7 +10,7 @@ namespace FinancialEvaluationApp.Models.Core
         public bool IsActive { get; set; }=true;
         public DateTimeOffset? LastLoginDate { get; set; }
 
-        public bool MustChangePassword { get; set; } = false;
+        public bool MustChangePassword { get; set; } = true;
 
         public Guid? RoleId { get; set; }
         public AppRole Role { get; set; } = null!;

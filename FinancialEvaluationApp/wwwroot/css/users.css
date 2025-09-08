@@ -7,7 +7,7 @@
     font-family: 'Vazirmatn', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Arabic", Arial, sans-serif;
 }
 
-    /* کارت و ظرف جدول */
+    /* کارت و ظرف جدول (اختیاری) */
     .users-page .users-card {
         border-radius: .5rem;
         overflow: hidden;
@@ -18,9 +18,9 @@
         overflow: auto;
     }
 
-    /* جدول و هدر چسبان (بدون رنگ پس‌زمینه؛ رنگ را با کلاس روی <thead> بده) */
+    /* جدول و هدر چسبان */
     .users-page .users-table {
-        table-layout: fixed; /* تا عرض ستون‌ها دقیق اعمال شود */
+        table-layout: fixed;
     }
 
         .users-page .users-table thead th {
@@ -32,6 +32,27 @@
             letter-spacing: .2px;
             border-bottom: 2px solid rgba(var(--bs-primary-rgb), .45);
         }
+
+    /* تم‌های ملایم برای رنگ هدر (فقط همین صفحه) */
+    .users-page .thead-soft th {
+        background-color: #f1f5f9;
+        color: #334155;
+    }
+
+    .users-page .thead-primary th {
+        background-color: rgba(var(--bs-primary-rgb), .12);
+        color: #0f172a;
+    }
+
+    .users-page .thead-primary-solid th {
+        background-color: var(--bs-primary);
+        color: #fff;
+    }
+
+    .users-page .thead-dark th {
+        background-color: #1f2937;
+        color: #fff;
+    }
 
     /* کنترل عرض ستون‌ها */
     .users-page .col-idx {
@@ -59,11 +80,11 @@
     }
 
     .users-page .col-actions {
-        width: 180px;
+        width: 260px;
         white-space: nowrap;
     }
 
-    /* وسط‌چینِ دقیق برای ستون‌های نام کاربری و نام کامل (Header + Cells) */
+    /* وسط‌چین برای نام کاربری و نام کامل (Header + Cells) */
     .users-page .users-table th.col-username,
     .users-page .users-table td.col-username,
     .users-page .users-table th.col-fullname,
@@ -71,41 +92,14 @@
         text-align: center;
     }
 
-    /* نمایش تمیز متن‌های بلند */
+    /* متن‌های بلند بریده نشوند */
     .users-page .text-clip {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    /* گروه دکمه‌های عملیات در یک خط با فاصله استاندارد */
-    .users-page .btn-actions {
-        display: inline-flex;
-        gap: .5rem;
-        flex-wrap: nowrap;
-    }
-
-    /* عنوان‌ها با آیکون (اختیاری) */
-    .users-page .th-with-icon {
-        display: inline-flex;
-        align-items: center;
-        gap: .35rem;
-    }
-
-        .users-page .th-with-icon i {
-            font-size: 1rem;
-            opacity: .85;
-        }
-
-/* ---------------------------------
-   نکته:
-   - برای رنگ پس‌زمینهٔ تیترها، روی <thead> از کلاس‌های عمومی استفاده کن،
-     مثلاً در site.css یک کلاس مثل .thead-soft ساختیم:
-       <thead class="text-center thead-soft">
-   - اگر تم دیگری خواستی، فقط کلاس <thead> را عوض کن.
-   --------------------------------- */
-
-    /* لینک‌های داخل تیتر جدول: رنگ و چینش */
+    /* لینک‌های قابل سورت در تیتر */
     .users-page .users-table thead th .th-link {
         color: inherit;
         text-decoration: none;
@@ -122,4 +116,46 @@
     .users-page .users-table thead th .bi-caret-down-fill {
         opacity: .85;
         font-size: .9rem;
+    }
+
+/* گروه دکمه‌های عملیات (btn-group) */
+.users-actions-group form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+    .users-actions-group form .btn {
+        border-radius: 0;
+    }
+
+/* ترمیم radius در ابتدا/انتها وقتی <a> و <button> قاطی‌اند */
+.users-actions-group > .btn:first-child,
+.users-actions-group > form:first-child > .btn {
+    border-top-right-radius: .375rem !important;
+    border-bottom-right-radius: .375rem !important;
+}
+
+.users-actions-group > .btn:last-child,
+.users-actions-group > form:last-child > .btn {
+    border-top-left-radius: .375rem !important;
+    border-bottom-left-radius: .375rem !important;
+}
+
+/* فاصله آیکون و متن در RTL */
+[dir="rtl"] .users-actions-group .ms-1 {
+    margin-right: .25rem !important;
+    margin-left: 0 !important;
+}
+
+/* هِدِر با آیکون (اختیاری) */
+.users-page .th-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+    .users-page .th-with-icon i {
+        font-size: 1rem;
+        opacity: .85;
     }

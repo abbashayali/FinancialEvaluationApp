@@ -1,0 +1,27 @@
+﻿@model FinancialEvaluationApp.Models.Core.AppUser
+@{
+    ViewData["Title"] = "حذف کاربر";
+}
+<div class="users-page container mt-4" dir="rtl">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white"><strong>حذف کاربر</strong></div>
+        <div class="card-body">
+            <p>آیا از حذف کاربر زیر مطمئن هستید؟</p>
+            <ul>
+                <li><strong>نام کاربری:</strong> @Model.Username</li>
+                <li><strong>نام کامل:</strong> @Model.FullName</li>
+                <li><strong>نقش:</strong> @Model.Role?.Name</li>
+                <li><strong>وضعیت:</strong> @(Model.IsActive ? "فعال" : "غیرفعال")</li>
+            </ul>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light">انصراف</a>
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

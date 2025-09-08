@@ -16,16 +16,21 @@
         <h2 class="mb-0">مدیریت کاربران</h2>
         <div class="d-flex align-items-center gap-2">
             <span class="badge bg-primary" title="تعداد کاربران">@items.Count</span>
-            <a asp-controller="Users" asp-action="Create" class="btn btn-success">کاربر جدید</a>
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <a asp-controller="Users" asp-action="Create" class="btn btn-success">
+                    <i class="bi bi-person-plus me-1"></i> کاربر جدید
+                </a>
+            }
         </div>
     </div>
 
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle users-table">
-
             @{
                 var sort = (ViewBag.Sort as string ?? "username").ToLowerInvariant();
                 var dir = (ViewBag.Dir as string ?? "asc").ToLowerInvariant();
+
                 Func<string, string> nextDir = col => (sort == col && dir == "asc") ? "desc" : "asc";
                 Func<string, string> caret = col =>
                 {
@@ -36,7 +41,6 @@
                 };
             }
 
-            <!-- هدر ملایم -->
             <thead class="text-center thead-primary">
                 <tr>
                     <th class="col-idx">
@@ -44,36 +48,35 @@
                     </th>
 
                     <th class="col-username">
-                        <a asp-action="Index" asp-route-sort="username" asp-route-dir="@nextDir("username")" class="th-link">
+                        <a asp-action="Index" asp-route-sort="username" asp-route-dir="@(nextDir("username"))" class="th-link">
                             <span class="th-with-icon"><i class="bi bi-person-badge"></i> نام کاربری</span>
                             @Html.Raw(caret("username"))
                         </a>
                     </th>
 
                     <th class="col-fullname">
-                        <a asp-action="Index" asp-route-sort="fullname" asp-route-dir="@nextDir("fullname")" class="th-link">
+                        <a asp-action="Index" asp-route-sort="fullname" asp-route-dir="@(nextDir("fullname"))" class="th-link">
                             <span class="th-with-icon"><i class="bi bi-card-text"></i> نام کامل</span>
                             @Html.Raw(caret("fullname"))
                         </a>
                     </th>
 
                     <th class="col-role">
-                        <a asp-action="Index" asp-route-sort="role" asp-route-dir="@nextDir("role")" class="th-link">
+                        <a asp-action="Index" asp-route-sort="role" asp-route-dir="@(nextDir("role"))" class="th-link">
                             <span class="th-with-icon"><i class="bi bi-shield-check"></i> نقش</span>
                             @Html.Raw(caret("role"))
                         </a>
                     </th>
 
                     <th class="col-status">
-                        <a asp-action="Index" asp-route-sort="status" asp-route-dir="@nextDir("status")" class="th-link">
+                        <a asp-action="Index" asp-route-sort="status" asp-route-dir="@(nextDir("status"))" class="th-link">
                             <span class="th-with-icon"><i class="bi bi-toggle-on"></i> وضعیت</span>
                             @Html.Raw(caret("status"))
                         </a>
                     </th>
 
-
                     <th class="col-lastlogin">
-                        <a asp-action="Index" asp-route-sort="lastlogin" asp-route-dir="@nextDir("lastlogin")" class="th-link">
+                        <a asp-action="Index" asp-route-sort="lastlogin" asp-route-dir="@(nextDir("lastlogin"))" class="th-link">
                             <span class="th-with-icon"><i class="bi bi-clock-history"></i> آخرین ورود</span>
                             @Html.Raw(caret("lastlogin"))
                         </a>
@@ -97,12 +100,19 @@
                     var i = 1;
                     foreach (var u in items)
                     {
-                        <tr class="@(u.IsActive ? "" : "table-secondary")">
+                        var isAdminRow = string.Equals(u.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
+                        var isAdmin = User.IsInRole("Admin");
+                        var isManager = User.IsInRole("Manager");
+
+                        var canEdit = isAdmin || (isManager && !isAdminRow);
+                        var canDelete = isAdmin && !isAdminRow; // منیجر حذف ندارد
+                        var canReset = (isAdmin && !isAdminRow)
+                        || (isManager && string.Equals(u.RoleName, "User", StringComparison.OrdinalIgnoreCase));
+
+                        <tr>
                             <td>@i</td>
-
-                            <td class="col-username text-center text-clip" title="@u.Username">@u.Username</td>
-                            <td class="col-fullname text-center text-clip" title="@u.FullName">@u.FullName</td>
-
+                            <td class="text-center">@u.Username</td>
+                            <td class="text-center">@u.FullName</td>
                             <td><span class="badge bg-info">@u.RoleName</span></td>
                             <td>
                                 @if (u.IsActive)
@@ -111,26 +121,46 @@
                                 }
                                 else
                                 {
-
                                     <span class="badge bg-secondary">غیرفعال</span>
                                 }
                             </td>
-
-                            <td class="text-clip" title="@(u.LastLoginDisplay ?? "—")">@((u.LastLoginDisplay ?? "—"))</td>
+                            <td>@(u.LastLoginDisplay ?? "—")</td>
 
                             <td class="col-actions">
-                                <div class="btn-actions">
-                                    <a asp-controller="Users" asp-action="Edit" asp-route-id="@u.Id"
-                                       class="btn btn-sm btn-outline-primary" title="ویرایش">
-                                        <i class="bi bi-pencil me-1"></i> ویرایش
-                                    </a>
-                                    <a asp-controller="Users" asp-action="Delete" asp-route-id="@u.Id"
-                                       class="btn btn-sm btn-outline-danger" title="حذف">
-                                        <i class="bi bi-trash me-1"></i> حذف
-                                    </a>
+                                <div class="btn-group btn-group-sm users-actions-group" role="group" aria-label="actions">
+                                    @if (canEdit)
+                                    {
+                                        <a asp-controller="Users" asp-action="Edit" asp-route-id="@u.Id"
+                                           class="btn btn-outline-primary" title="ویرایش">
+                                            <i class="bi bi-pencil"></i>
+                                            <span class="ms-1">ویرایش</span>
+                                        </a>
+                                    }
+
+                                    @if (canReset)
+                                    {
+                                        <form asp-controller="Users" asp-action="ResetPassword" asp-route-id="@u.Id"
+                                              method="post" class="m-0 p-0 d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-warning" title="ریست گذرواژه">
+                                                <i class="bi bi-key"></i>
+                                                <span class="ms-1">ریست گذرواژه</span>
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (canDelete)
+                                    {
+                                        <a asp-controller="Users" asp-action="Delete" asp-route-id="@u.Id"
+                                           class="btn btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                            <span class="ms-1">حذف</span>
+                                        </a>
+                                    }
                                 </div>
                             </td>
                         </tr>
+
                         i++;
                     }
                 }

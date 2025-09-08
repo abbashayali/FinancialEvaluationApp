@@ -10,7 +10,8 @@ using FinancialEvaluationApp.Models.ViewModels.Accounts;
 
 namespace FinancialEvaluationApp.Controllers
 {
-    [AllowAnonymous] // پیش‌فرض: فقط اکشن‌هایی که علامت‌گذاری شده‌اند بازند (Authorize سراسری فعال است)
+    // Authorize سراسری فعال است؛ این کنترلر پیش‌فرض Anonymous دارد مگر جایی که [Authorize] خورده
+    [AllowAnonymous]
     public class AccountController : Controller
     {
         private readonly FinancialEvaluationDbContext _db;
@@ -37,41 +38,51 @@ namespace FinancialEvaluationApp.Controllers
         {
             if (!ModelState.IsValid) return View(vm);
 
+            // نرمال‌سازی یوزرنیم (رفع هشدار نال + امنیت)
+            var rawUsername = (vm.Username ?? string.Empty).Trim();
+            var usernameKey = rawUsername.ToLowerInvariant();
+
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            if (_throttle.IsLocked(vm.Username, ip, out var retry))
+            if (_throttle.IsLocked(usernameKey, ip, out var retry))
             {
-                ModelState.AddModelError("", $"حساب موقتاً قفل شد. بعد از {(int)retry!.Value.TotalMinutes} دقیقه دوباره تلاش کنید.");
+                var mins = retry.HasValue ? (int)retry.Value.TotalMinutes : 1;
+                ModelState.AddModelError("", $"حساب موقتاً قفل شد. بعد از {mins} دقیقه دوباره تلاش کنید.");
                 return View(vm);
             }
 
-            var inputUsername = (vm.Username ?? string.Empty).Trim().ToLower();
-            var user = await _db.AppUsers.Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username.ToLower() == inputUsername && u.IsActive);
+            // جستجوی کاربر فعال با یوزرنیم نرمال‌شده
+            var user = await _db.AppUsers
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.IsActive && u.Username.ToLower() == usernameKey);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(vm.Password, user.PasswordHash))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(vm.Password ?? string.Empty, user.PasswordHash))
             {
-                _throttle.RegisterFail(vm.Username, ip);
+                _throttle.RegisterFail(usernameKey, ip);
                 ModelState.AddModelError("", "نام کاربری یا رمز عبور اشتباه است.");
                 return View(vm);
             }
 
-            _throttle.RegisterSuccess(vm.Username, ip);
+            _throttle.RegisterSuccess(usernameKey, ip);
 
+            // Claims ایمن (رفع هشدارهای نال)
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Role, user.Role.Name),
+                new Claim(ClaimTypes.Name, string.IsNullOrWhiteSpace(user.FullName) ? user.Username : user.FullName),
+                new Claim(ClaimTypes.Role, user.Role?.Name ?? "User"),
                 new Claim("username", user.Username)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
+
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+            // اگر باید پسورد را عوض کند، بلافاصله هدایتش کن
             if (user.MustChangePassword)
                 return RedirectToAction(nameof(ChangePassword));
 
+            // ثبت آخرین ورود
             user.LastLoginDate = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
 
@@ -84,7 +95,6 @@ namespace FinancialEvaluationApp.Controllers
         [HttpGet]
         public IActionResult ChangePassword() => View(new ChangePasswordViewModel());
 
-
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -92,28 +102,28 @@ namespace FinancialEvaluationApp.Controllers
         {
             if (!ModelState.IsValid) return View(vm);
 
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId is null) return Unauthorized();
+            var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(idValue, out var uid)) return Unauthorized();
 
-            var uid = Guid.Parse(userId.Value);
             var user = await _db.AppUsers.FindAsync(uid);
             if (user is null) return Unauthorized();
 
             // بررسی رمز فعلی
-            if (!BCrypt.Net.BCrypt.Verify(vm.CurrentPassword, user.PasswordHash))
+            if (!BCrypt.Net.BCrypt.Verify(vm.CurrentPassword ?? string.Empty, user.PasswordHash))
             {
                 ModelState.AddModelError("", "رمز فعلی درست نیست.");
                 return View(vm);
             }
 
-            // سیاست ساده: حداقل ۱۲ کاراکتر
-            if (vm.NewPassword.Length < 12)
+            // سیاست: حداقل ۱۲ کاراکتر
+            if (string.IsNullOrEmpty(vm.NewPassword) || vm.NewPassword.Length < 12)
             {
                 ModelState.AddModelError("", "رمز جدید باید حداقل ۱۲ کاراکتر باشد.");
                 return View(vm);
             }
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(vm.NewPassword);
+            // یکسان‌سازی WorkFactor در کل سیستم (پیشنهادی: 12)
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(vm.NewPassword, workFactor: 12);
             user.MustChangePassword = false;
             user.LastLoginDate = DateTimeOffset.UtcNow;
 
@@ -129,7 +139,7 @@ namespace FinancialEvaluationApp.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login","Account");
+            return RedirectToAction("Login", "Account");
         }
 
         public IActionResult AccessDenied() => View();
