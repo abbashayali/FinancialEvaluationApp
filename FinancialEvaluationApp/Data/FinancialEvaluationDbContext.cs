@@ -19,68 +19,78 @@ namespace FinancialEvaluationApp.Data
         // RefData
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<FxRate> FxRates { get; set; }
-
         public DbSet<FiscalYear> FiscalYears { get; set; }
         public DbSet<CommissionSession> CommissionSessions { get; set; }
+
+        // Auth
         public DbSet<AppUser> AppUsers { get; set; }
         public DbSet<AppRole> AppRoles { get; set; }
-
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // AppUser
+            // --- AppUser
             modelBuilder.Entity<AppUser>(e =>
             {
                 e.Property(x => x.Username)
                     .IsRequired()
-                    .HasMaxLength(50);           // هم‌راستا با VM
+                    .HasMaxLength(50);
+
                 e.Property(x => x.FullName)
                     .IsRequired()
                     .HasMaxLength(100);
 
-                e.HasIndex(x => x.Username).IsUnique();   // فقط همین یک بار
+                e.HasIndex(x => x.Username).IsUnique();
 
-                // اختیاری: EF خودش برای DateTimeOffset همین نوع را می‌گذارد،
-                // ولی اگر می‌خواهی صریح باشد، این خط خوب است:
-                e.Property(x => x.LastLoginDate)
-                    .HasColumnType("datetimeoffset");
+                // صراحت نوع تاریخ
+                e.Property(x => x.LastLoginDate).HasColumnType("datetimeoffset");
             });
 
-            // AppRole
+            // ❗ اطلاع به EF: این جدول تریگر دارد
+            modelBuilder.Entity<AppUser>().ToTable(tb =>
+            {
+                tb.HasTrigger("TR_AppUsers_BlockExternalRoleUpdate");
+                tb.HasTrigger("TR_AppUsers_OneAdmin");
+            });
+
+            // --- AppRole
             modelBuilder.Entity<AppRole>(e =>
             {
                 e.Property(x => x.Name)
                     .IsRequired()
                     .HasMaxLength(50);
+
                 e.HasIndex(x => x.Name).IsUnique();
             });
 
+            // ❗ اطلاع به EF: این جدول هم تریگر دارد
+            modelBuilder.Entity<AppRole>().ToTable(tb =>
+            {
+                tb.HasTrigger("TR_AppRoles_BlockExternalDml");
+            });
+
+            // --- Currency
             modelBuilder.Entity<Currency>(e =>
             {
                 e.Property(x => x.Code).IsRequired().HasMaxLength(10);
-                e.HasIndex(x => x.Code).IsUnique();      // این خط باعث می‌شود EF ایندکس را بسازد
+                e.HasIndex(x => x.Code).IsUnique();
             });
 
-            // Tender
+            // --- Tender
             modelBuilder.Entity<Tender>(e =>
             {
-                // مبلغ‌ها را با دقت امن ذخیره کن (SQL Server: decimal(18,2))
+                // دقت مالی
                 e.Property(x => x.BaseEstimateAmount).HasPrecision(18, 2);
-                // اگر مبلغ‌های دیگری داری، همین‌جا اضافه کن:
-                // e.Property(x => x.SomeOtherAmount).HasPrecision(18, 2);
             });
 
-            // اگر نرخ ارز داری (مثلاً FxRate.Rate) دقت بیشتری بده:
+            // --- FxRate
             modelBuilder.Entity<FxRate>(e =>
             {
                 e.Property(x => x.Rate).HasPrecision(18, 6);
             });
 
-
-            // مقدار پیش‌فرض فیلدهای BaseEntity را DB بده، نه کد
+            // --- Defaults برای BaseEntity
             foreach (var et in modelBuilder.Model.GetEntityTypes())
             {
                 if (typeof(BaseEntity).IsAssignableFrom(et.ClrType))
@@ -90,17 +100,8 @@ namespace FinancialEvaluationApp.Data
                       .HasDefaultValueSql("SYSUTCDATETIME()");
                     eb.Property<bool>(nameof(BaseEntity.IsDeleted))
                       .HasDefaultValue(false);
-                    // UpdatedAt اختیاری است؛ پیش‌فرض لازم ندارد
                 }
             }
-           
-
         }
-
-
-
-
-
     }
 }
-

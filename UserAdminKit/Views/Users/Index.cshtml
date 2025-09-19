@@ -1,0 +1,150 @@
+﻿@using UserAdminKit.Abstractions
+@using System.Linq
+
+@model UserIndexVm
+
+@{
+    ViewData["Title"] = "مدیریت کاربران";
+
+    // مقادیر امن برای سورت/جهت
+    var sort = (Model?.Sort ?? "username").ToLowerInvariant();
+    var dir = (Model?.Dir ?? "asc").ToLowerInvariant();
+
+    // لیست امن از آیتم‌ها برای جلوگیری از null-deref
+    var items = (Model?.Items ?? Enumerable.Empty<UserListItemVm>()).ToList();
+
+    string Next(string col) => (sort == col && dir == "asc") ? "desc" : "asc";
+    string Caret(string col)
+        => (sort == col)
+           ? (dir == "asc" ? "<i class=\"bi bi-caret-up-fill\"></i>" : "<i class=\"bi bi-caret-down-fill\"></i>")
+           : "";
+}
+
+<div class="users-page container mt-4" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">مدیریت کاربران</h2>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary">@items.Count</span>
+
+            <a asp-controller="Users" asp-action="Create" class="btn btn-success">
+                <i class="bi bi-person-plus me-1"></i> کاربر جدید
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle users-table">
+            <thead class="text-center thead-primary">
+                <tr>
+                    <th class="col-idx"><span class="th-with-icon"><i class="bi bi-hash"></i> #</span></th>
+
+                    <th class="col-username">
+                        <a asp-action="Index" asp-route-sort="username" asp-route-dir="@(Next("username"))" class="th-link">
+                            <span class="th-with-icon"><i class="bi bi-person-badge"></i> نام کاربری</span>
+                            @Html.Raw(Caret("username"))
+                        </a>
+                    </th>
+
+                    <th class="col-fullname">
+                        <a asp-action="Index" asp-route-sort="fullname" asp-route-dir="@(Next("fullname"))" class="th-link">
+                            <span class="th-with-icon"><i class="bi bi-card-text"></i> نام کامل</span>
+                            @Html.Raw(Caret("fullname"))
+                        </a>
+                    </th>
+
+                    <th class="col-role">
+                        <a asp-action="Index" asp-route-sort="role" asp-route-dir="@(Next("role"))" class="th-link">
+                            <span class="th-with-icon"><i class="bi bi-shield-check"></i> نقش</span>
+                            @Html.Raw(Caret("role"))
+                        </a>
+                    </th>
+
+                    <th class="col-status">
+                        <a asp-action="Index" asp-route-sort="status" asp-route-dir="@(Next("status"))" class="th-link">
+                            <span class="th-with-icon"><i class="bi bi-toggle-on"></i> وضعیت</span>
+                            @Html.Raw(Caret("status"))
+                        </a>
+                    </th>
+
+                    <th class="col-lastlogin">
+                        <a asp-action="Index" asp-route-sort="lastlogin" asp-route-dir="@(Next("lastlogin"))" class="th-link">
+                            <span class="th-with-icon"><i class="bi bi-clock-history"></i> آخرین ورود</span>
+                            @Html.Raw(Caret("lastlogin"))
+                        </a>
+                    </th>
+
+                    <th class="col-actions">
+                        <span class="th-with-icon"><i class="bi bi-wrench"></i> عملیات</span>
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody class="text-center">
+                @if (!items.Any())
+                {
+                    <tr><td colspan="7" class="text-muted">هیچ کاربری یافت نشد.</td></tr>
+                }
+                else
+                {
+                    var i = 1;
+                    foreach (var u in items)
+                    {
+                        var isAdminRow = string.Equals(u.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
+                        var selfId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                        var isSelf = selfId != null && string.Equals(u.Id.ToString(), selfId, StringComparison.OrdinalIgnoreCase);
+                        var isAdmin = User.IsInRole("Admin") || User.HasClaim("is_admin", "1");
+                        var isManager = User.IsInRole("Manager") || User.HasClaim("is_manager", "1");
+                        var canEdit = isAdmin || (isManager && !isAdminRow);
+                        var canDelete = isAdmin && !isAdminRow;
+                        var canReset = !isSelf && (isAdmin || (isManager && !isAdminRow));
+
+                        <tr>
+                            <td>@i</td>
+                            <td class="col-username text-center">@u.Username</td>
+                            <td class="col-fullname text-center">@u.FullName</td>
+                            <td><span class="badge bg-info">@u.RoleName</span></td>
+                            <td>
+                                @if (u.IsActive)
+                                {
+                                    <span class="badge bg-success">فعال</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">غیرفعال</span>
+                                }
+                            </td>
+                            <td>@(u.LastLoginDisplay ?? "—")</td>
+                            <td class="col-actions">
+                                <div class="btn-group btn-group-sm users-actions-group" role="group" aria-label="actions">
+                                    @if (canEdit)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@u.Id" class="btn btn-outline-primary">
+                                            <i class="bi bi-pencil"></i><span class="ms-1">ویرایش</span>
+                                        </a>
+                                    }
+                                    @if (canReset)
+                                    {
+                                        <form asp-action="ResetPassword" asp-route-id="@u.Id" method="post" class="m-0 p-0 d-inline"
+                                              onsubmit="return confirm('گذرواژهٔ کاربر بازنشانی شود؟');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-warning">
+                                                <i class="bi bi-key"></i><span class="ms-1">ریست گذرواژه</span>
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (canDelete)
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@u.Id" class="btn btn-outline-danger">
+                                            <i class="bi bi-trash"></i><span class="ms-1">حذف</span>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

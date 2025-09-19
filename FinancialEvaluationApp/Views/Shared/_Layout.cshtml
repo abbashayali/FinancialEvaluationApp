@@ -1,54 +1,79 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@* Views/Shared/_Layout.cshtml *@
+@{
+    var cspNonce = Context.Items["CSP_NONCE"] as string ?? "";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+
+    bool isAdminClaim = User.HasClaim("is_admin", "1");
+    bool isManagerClaim = User.HasClaim("is_manager", "1");
+    bool isAdminRole = User.IsInRole("Admin");
+    bool isManagerRole = User.IsInRole("Manager");
+
+    bool canSeeUserMgmt = isAdminClaim || isManagerClaim || isAdminRole || isManagerRole;
+    var usernameDisplay = (User.FindFirst("username")?.Value) ?? (User.Identity?.Name ?? "");
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
 <head>
-    
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - FinancialEvaluationApp</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FinancialEvaluationApp.styles.css" asp-append-version="true" />
-    @RenderSection("Styles", required: false)   <!-- users.css بعد از site.css لود شود -->
 
-
-
+    @RenderSection("Styles", required: false)
 </head>
 <body>
+    <!-- ست‌کردن تم در شروع (پیش‌فرض: light)؛ با nonce و روی :root -->
+    <script nonce="@cspNonce">
+        (function () {
+            try {
+                var saved = localStorage.getItem('fe_theme');
+                var theme = (saved === 'dark' || saved === 'light') ? saved : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
+
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FinancialEvaluationApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">FinancialEvaluationApp</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+
+                <div id="mainNav" class="navbar-collapse collapse d-sm-inline-flex">
+                    <!-- لینک‌های اصلی (راست در RTL) -->
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">خانه</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">حریم خصوصی</a>
                         </li>
-                        @* منوی کاربری و لینک‌های وابسته به احراز هویت *@
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            @* فقط برای ادمین: لینک مدیریت کاربران *@
-                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Users" asp-action="Index">
-                                        <i class="bi bi-people me-1"></i> مدیریت کاربران
-                                    </a>
-                                </li>
-                            }
 
+                        @if (isAuthenticated && canSeeUserMgmt)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="UserAdmin" asp-controller="Users" asp-action="Index">
+                                    <i class="bi bi-people me-1"></i> مدیریت کاربران
+                                </a>
+                            </li>
+                        }
+
+                        @if (isAuthenticated)
+                        {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button"
                                    data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-person-circle me-1"></i>
-                                    @((User.FindFirst("username")?.Value) ?? User.Identity!.Name)
+                                    @usernameDisplay
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                     <li>
@@ -76,27 +101,64 @@
                                 </a>
                             </li>
                         }
-
                     </ul>
 
+                    <!-- دکمهٔ تم؛ سمت مخالف لینک‌ها (چپ در RTL) -->
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item d-flex align-items-center">
+                            <button id="theme-toggle" type="button" class="btn btn-sm btn-outline-secondary" title="تیره/روشن">
+                                <i class="bi bi-moon"></i>
+                            </button>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
+            @await Html.PartialAsync("_Toasts")
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 1404 - FinancialEvaluationApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 1404 - FinancialEvaluationApp -
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- اسکریپت سوییچر تم (با nonce)؛ روی :root و ذخیره در localStorage -->
+    <script nonce="@cspNonce">
+        (function () {
+            var btn = document.getElementById('theme-toggle');
+            if (!btn) return;
+
+            function setIcon(theme) {
+                btn.innerHTML = (theme === 'dark')
+                    ? '<i class="bi bi-sun"></i>'
+                    : '<i class="bi bi-moon"></i>';
+            }
+
+            var cur = document.documentElement.getAttribute('data-theme') || 'light';
+            setIcon(cur);
+
+            btn.addEventListener('click', function () {
+                var now = document.documentElement.getAttribute('data-theme') || 'light';
+                var next = (now === 'dark') ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('fe_theme', next); } catch (e) { }
+                setIcon(next);
+            });
+        })();
+    </script>
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using FinancialEvaluationApp.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,5 +28,16 @@ namespace FinancialEvaluationApp.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        [HttpGet]
+        public IActionResult ToastTest()
+        {
+            TempData["Success"] = "کار انجام شد ✅";
+            TempData["Warning"] = "این یک هشدار آزمایشی است.";
+            TempData["Error"] = "نمونه خطا برای تست.";
+            TempData["Info"] = "پیام اطلاع‌رسانی نمونه.";
+
+            return RedirectToAction("Index"); // به صفحه‌ای که لایوت دارد
+        }
+
     }
 }

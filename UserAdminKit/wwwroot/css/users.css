@@ -1,0 +1,106 @@
+﻿/* Users page shared styles (RCL) */
+.users-page {
+    font-family: 'Vazirmatn', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Arabic", Arial, sans-serif;
+}
+
+    .users-page .users-table {
+        table-layout: fixed;
+    }
+
+        .users-page .users-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            color: #334155;
+            font-weight: 700;
+            letter-spacing: .2px;
+            border-bottom: 2px solid rgba(13,110,253,.35);
+            background: var(--fe-surface-2, #eef2f6);
+        }
+
+    .users-page .col-idx {
+        width: 60px;
+    }
+
+    .users-page .col-username {
+        width: 20%;
+    }
+
+    .users-page .col-fullname {
+        width: 26%;
+    }
+
+    .users-page .col-role {
+        width: 12%;
+    }
+
+    .users-page .col-status {
+        width: 12%;
+    }
+
+    .users-page .col-lastlogin {
+        width: 18%;
+    }
+
+    .users-page .col-actions {
+        width: 260px;
+        white-space: nowrap;
+    }
+
+    .users-page .users-table th.col-username,
+    .users-page .users-table td.col-username,
+    .users-page .users-table th.col-fullname,
+    .users-page .users-table td.col-fullname {
+        text-align: center;
+    }
+
+    .users-page .th-with-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+        .users-page .th-with-icon i {
+            font-size: 1rem;
+            opacity: .85;
+        }
+
+    .users-page .users-table thead th .th-link {
+        color: inherit;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+        .users-page .users-table thead th .th-link:hover {
+            text-decoration: underline;
+        }
+
+.users-actions-group form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+    .users-actions-group form .btn {
+        border-radius: 0;
+    }
+
+.users-actions-group > .btn:first-child,
+.users-actions-group > form:first-child > .btn {
+    border-top-right-radius: .375rem !important;
+    border-bottom-right-radius: .375rem !important;
+}
+
+.users-actions-group > .btn:last-child,
+.users-actions-group > form:last-child > .btn {
+    border-top-left-radius: .375rem !important;
+    border-bottom-left-radius: .375rem !important;
+}
+
+/* Dark readability for striped rows */
+[data-theme="dark"] .table.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #1b2330 !important;
+    color: #e6edf5 !important;
+}

@@ -10,7 +10,7 @@ using FinancialEvaluationApp.Models.ViewModels.Accounts;
 
 namespace FinancialEvaluationApp.Controllers
 {
-    // Authorize سراسری فعال است؛ این کنترلر پیش‌فرض Anonymous دارد مگر جایی که [Authorize] خورده
+    // Authorize سراسری فعال است؛ این کنترلر پیش‌فرض Anonymous دارد مگر جایی که [Authorize] بخورد
     [AllowAnonymous]
     public class AccountController : Controller
     {
@@ -64,27 +64,41 @@ namespace FinancialEvaluationApp.Controllers
 
             _throttle.RegisterSuccess(usernameKey, ip);
 
-            // Claims ایمن (رفع هشدارهای نال)
+            // Claims ایمن
+            var roleName = user.Role?.Name ?? string.Empty;
+            var isAdmin = roleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+            var isManager = roleName.Equals("Manager", StringComparison.OrdinalIgnoreCase);
+
+            // نقش به‌صورت امن (برای Guid و Guid?)
+            var roleIdStr = user.RoleId is Guid rid ? rid.ToString() : string.Empty;
+
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, string.IsNullOrWhiteSpace(user.FullName) ? user.Username : user.FullName),
-                new Claim(ClaimTypes.Role, user.Role?.Name ?? "User"),
-                new Claim("username", user.Username)
-            };
+{
+    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+    new Claim(ClaimTypes.Name, user.FullName ?? string.Empty),
+    new Claim(ClaimTypes.Role, roleName),
+    new Claim("username", user.Username ?? string.Empty),
+
+    // ← خط اصلاح‌شده
+    new Claim("role_id", roleIdStr),
+
+    new Claim("is_admin",   isAdmin   ? "1" : "0"),
+    new Claim("is_manager", isManager ? "1" : "0")
+};
+
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+            // ثبت آخرین ورود برای همه حالات (حتی اگر باید پسورد را عوض کند)
+            user.LastLoginDate = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+
             // اگر باید پسورد را عوض کند، بلافاصله هدایتش کن
             if (user.MustChangePassword)
                 return RedirectToAction(nameof(ChangePassword));
-
-            // ثبت آخرین ورود
-            user.LastLoginDate = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
 
             return !string.IsNullOrWhiteSpace(vm.ReturnUrl)
                 ? LocalRedirect(vm.ReturnUrl!)
@@ -116,13 +130,13 @@ namespace FinancialEvaluationApp.Controllers
             }
 
             // سیاست: حداقل ۱۲ کاراکتر
-            if (string.IsNullOrEmpty(vm.NewPassword) || vm.NewPassword.Length < 12)
+            if (string.IsNullOrWhiteSpace(vm.NewPassword) || vm.NewPassword.Length < 12)
             {
                 ModelState.AddModelError("", "رمز جدید باید حداقل ۱۲ کاراکتر باشد.");
                 return View(vm);
             }
 
-            // یکسان‌سازی WorkFactor در کل سیستم (پیشنهادی: 12)
+            // یکسان‌سازی WorkFactor (پیشنهادی: 12)
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(vm.NewPassword, workFactor: 12);
             user.MustChangePassword = false;
             user.LastLoginDate = DateTimeOffset.UtcNow;

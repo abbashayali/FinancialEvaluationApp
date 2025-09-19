@@ -1,0 +1,53 @@
+﻿@{
+    var ok = TempData["Success"] as string;
+    var warn = TempData["Warning"] as string;
+    var err = TempData["Error"] as string;
+    var info = TempData["Info"] as string;
+    bool hasAny = !string.IsNullOrWhiteSpace(ok) || !string.IsNullOrWhiteSpace(warn)
+               || !string.IsNullOrWhiteSpace(err) || !string.IsNullOrWhiteSpace(info);
+}
+@if (hasAny)
+{
+    <div class="toast-fx toast-container position-fixed top-0 end-0 p-3" dir="rtl">
+        @* Success *@
+        @if (!string.IsNullOrWhiteSpace(ok))
+        {
+            <div class="toast text-bg-success border-0 shadow-sm mb-2" data-bs-delay="5000">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body"><i class="bi bi-check-circle me-2"></i>@ok</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        }
+        @* Warning *@
+        @if (!string.IsNullOrWhiteSpace(warn))
+        {
+            <div class="toast text-bg-warning border-0 shadow-sm mb-2" data-bs-delay="7000">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body"><i class="bi bi-exclamation-triangle me-2"></i>@warn</div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        }
+        @* Error *@
+        @if (!string.IsNullOrWhiteSpace(err))
+        {
+            <div class="toast text-bg-danger border-0 shadow-sm mb-2" data-bs-delay="8000">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body"><i class="bi bi-x-octagon me-2"></i>@err</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        }
+        @* Info *@
+        @if (!string.IsNullOrWhiteSpace(info))
+        {
+            <div class="toast text-bg-primary border-0 shadow-sm mb-2" data-bs-delay="6000">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body"><i class="bi bi-info-circle me-2"></i>@info</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        }
+    </div>
+}

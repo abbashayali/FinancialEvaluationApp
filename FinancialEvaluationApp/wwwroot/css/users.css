@@ -33,7 +33,7 @@
             border-bottom: 2px solid rgba(var(--bs-primary-rgb), .45);
         }
 
-    /* تم‌های ملایم برای رنگ هدر (فقط همین صفحه) */
+    /* تم‌های رنگ هدر (فقط همین صفحه) */
     .users-page .thead-soft th {
         background-color: #f1f5f9;
         color: #334155;
@@ -80,7 +80,7 @@
     }
 
     .users-page .col-actions {
-        width: 260px;
+        width: 300px;
         white-space: nowrap;
     }
 
@@ -118,37 +118,27 @@
         font-size: .9rem;
     }
 
-/* گروه دکمه‌های عملیات (btn-group) */
-.users-actions-group form {
-    display: inline-block;
-    margin: 0;
-    padding: 0;
-}
-
-    .users-actions-group form .btn {
-        border-radius: 0;
+    /* دکمه‌های عملیات با فاصله‌ی استاندارد (بدون btn-group) */
+    .users-page .btn-actions {
+        display: flex;
+        gap: .6rem; /* اگر فاصله بیشتر خواستی، تا .9rem بالا ببر */
+        align-items: center;
+        justify-content: center;
+        flex-wrap: nowrap;
     }
 
-/* ترمیم radius در ابتدا/انتها وقتی <a> و <button> قاطی‌اند */
-.users-actions-group > .btn:first-child,
-.users-actions-group > form:first-child > .btn {
-    border-top-right-radius: .375rem !important;
-    border-bottom-right-radius: .375rem !important;
-}
-
-.users-actions-group > .btn:last-child,
-.users-actions-group > form:last-child > .btn {
-    border-top-left-radius: .375rem !important;
-    border-bottom-left-radius: .375rem !important;
-}
+        .users-page .btn-actions form {
+            display: inline-block;
+            margin: 0;
+        }
 
 /* فاصله آیکون و متن در RTL */
-[dir="rtl"] .users-actions-group .ms-1 {
+[dir="rtl"] .btn-actions .ms-1 {
     margin-right: .25rem !important;
     margin-left: 0 !important;
 }
 
-/* هِدِر با آیکون (اختیاری) */
+/* هدر با آیکون (اختیاری) */
 .users-page .th-with-icon {
     display: inline-flex;
     align-items: center;

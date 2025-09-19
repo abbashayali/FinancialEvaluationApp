@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Linq
+@using UserAdminKit.Abstractions
+@model UserCreateVm
+
+@{
+    ViewData["Title"] = "کاربر جدید";
+
+    var roleItems = (Model.Roles?.ToList()
+        ?? (Model.RoleOptions ?? Enumerable.Empty<RoleOptionVm>())
+            .Select(o => new SelectListItem { Value = o.Id.ToString(), Text = o.Name })
+            .ToList());
+
+    roleItems.Insert(0, new SelectListItem { Value = "", Text = "-- انتخاب نقش --" });
+}
+
+<div class="container mt-4" dir="rtl">
+    <h2 class="mb-3">کاربر جدید</h2>
+
+    <form asp-action="Create" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label"></label>
+            <input asp-for="Username" class="form-control" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="RoleId" class="form-label"></label>
+            <select asp-for="RoleId" asp-items="roleItems" class="form-select"></select>
+            <span asp-validation-for="RoleId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" asp-for="IsActive" />
+            <label class="form-check-label" asp-for="IsActive"></label>
+        </div>
+
+        <div class="form-check form-switch mb-4">
+            <input class="form-check-input" asp-for="MustChangePassword" />
+            <label class="form-check-label" asp-for="MustChangePassword"></label>
+        </div>
+
+        <button type="submit" class="btn btn-success">ایجاد</button>
+        <a asp-action="Index" class="btn btn-secondary">انصراف</a>
+    </form>
+</div>

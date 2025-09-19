@@ -61,3 +61,7 @@ table.users-table > thead.thead-primary > tr > th,
 table.users-table > thead.thead-primary-solid > tr > th {
     background-clip: padding-box;
 }
+.toast-fx {
+    z-index: 1080;
+}
+

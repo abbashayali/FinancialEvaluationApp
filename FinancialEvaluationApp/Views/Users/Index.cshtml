@@ -1,6 +1,7 @@
 ﻿@using System.Linq
-@using FinancialEvaluationApp.ViewModels.Users
+@using UserAdminKit.Abstractions
 @model IEnumerable<UserListItemVm>
+
 
 @{
     ViewData["Title"] = "مدیریت کاربران";
@@ -104,15 +105,26 @@
                         var isAdmin = User.IsInRole("Admin");
                         var isManager = User.IsInRole("Manager");
 
+                        // کاربر جاری
+                        var selfId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                        var isSelf = selfId != null &&
+                        string.Equals(u.Id.ToString(), selfId, StringComparison.OrdinalIgnoreCase);
+
                         var canEdit = isAdmin || (isManager && !isAdminRow);
                         var canDelete = isAdmin && !isAdminRow; // منیجر حذف ندارد
-                        var canReset = (isAdmin && !isAdminRow)
-                        || (isManager && string.Equals(u.RoleName, "User", StringComparison.OrdinalIgnoreCase));
+
+                        // ریست: هیچ‌کس گذرواژه‌ی خودش را از اینجا ریست نکند
+                        // ادمین برای بقیه، منیجر برای User/Manager (نه Admin)
+                        var canReset =
+                        !isSelf && (
+                        isAdmin ||
+                        (isManager && !isAdminRow)
+                        );
 
                         <tr>
                             <td>@i</td>
-                            <td class="text-center">@u.Username</td>
-                            <td class="text-center">@u.FullName</td>
+                            <td class="col-username text-center">@u.Username</td>
+                            <td class="col-fullname text-center">@u.FullName</td>
                             <td><span class="badge bg-info">@u.RoleName</span></td>
                             <td>
                                 @if (u.IsActive)
@@ -124,27 +136,27 @@
                                     <span class="badge bg-secondary">غیرفعال</span>
                                 }
                             </td>
-                            <td>@(u.LastLoginDisplay ?? "—")</td>
+                            <td>@u.LastLoginDisplay</td>
+
 
                             <td class="col-actions">
-                                <div class="btn-group btn-group-sm users-actions-group" role="group" aria-label="actions">
+                                <div class="btn-actions">
                                     @if (canEdit)
                                     {
                                         <a asp-controller="Users" asp-action="Edit" asp-route-id="@u.Id"
-                                           class="btn btn-outline-primary" title="ویرایش">
-                                            <i class="bi bi-pencil"></i>
-                                            <span class="ms-1">ویرایش</span>
+                                           class="btn btn-sm btn-outline-primary" title="ویرایش">
+                                            <i class="bi bi-pencil"></i><span class="ms-1">ویرایش</span>
                                         </a>
                                     }
 
                                     @if (canReset)
                                     {
                                         <form asp-controller="Users" asp-action="ResetPassword" asp-route-id="@u.Id"
-                                              method="post" class="m-0 p-0 d-inline">
+                                              method="post" class="d-inline m-0 p-0"
+                                              onsubmit="return confirm('گذرواژهٔ کاربر بازنشانی شود؟');">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-outline-warning" title="ریست گذرواژه">
-                                                <i class="bi bi-key"></i>
-                                                <span class="ms-1">ریست گذرواژه</span>
+                                            <button type="submit" class="btn btn-sm btn-outline-warning" title="ریست گذرواژه">
+                                                <i class="bi bi-key"></i><span class="ms-1">ریست گذرواژه</span>
                                             </button>
                                         </form>
                                     }
@@ -152,9 +164,8 @@
                                     @if (canDelete)
                                     {
                                         <a asp-controller="Users" asp-action="Delete" asp-route-id="@u.Id"
-                                           class="btn btn-outline-danger" title="حذف">
-                                            <i class="bi bi-trash"></i>
-                                            <span class="ms-1">حذف</span>
+                                           class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="bi bi-trash"></i><span class="ms-1">حذف</span>
                                         </a>
                                     }
                                 </div>
@@ -165,6 +176,7 @@
                     }
                 }
             </tbody>
+
         </table>
     </div>
 </div>

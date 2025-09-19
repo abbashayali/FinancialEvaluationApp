@@ -1,0 +1,197 @@
+﻿/* ========= Global App Theme ========= */
+
+/* LIGHT (defaults on :root) */
+:root {
+    color-scheme: light dark; /* برای اسکرول‌بار و ورودی‌ها */
+    --fe-font: 'Vazirmatn', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Arabic", Arial, sans-serif;
+    --fe-body-bg: #f8fafc; /* خیلی روشن */
+    --fe-body-color: #1f2937; /* slate-800 */
+    --fe-surface-1: #ffffff; /* کارت‌ها/منوها/مودال‌ها */
+    --fe-surface-2: #eef2f6; /* تیتر جدول نرم */
+    --fe-border: #e2e8f0;
+    --fe-muted: #64748b; /* slate-500 */
+    --fe-link: #0d6efd;
+    --fe-row-hover: rgba(0,0,0,.04);
+    /* هم‌راستا با Bootstrap 5 */
+    --bs-body-bg: var(--fe-body-bg);
+    --bs-body-color: var(--fe-body-color);
+}
+
+    /* DARK (override on :root) */
+    :root[data-theme="dark"] {
+        --fe-body-bg: #0f172a; /* slate-950 */
+        --fe-body-color: #e2e8f0; /* slate-200 */
+        --fe-surface-1: #111827; /* کارت‌ها/منوها */
+        --fe-surface-2: #1f2937; /* تیتر جدول نرم تیره */
+        --fe-border: #334155; /* slate-600 */
+        --fe-muted: #94a3b8; /* slate-400 */
+        --fe-link: #7aa2ff;
+        --fe-row-hover: rgba(255,255,255,.06);
+        --bs-body-bg: var(--fe-body-bg);
+        --bs-body-color: var(--fe-body-color);
+    }
+
+/* Global apply */
+html, body {
+    background-color: var(--fe-body-bg);
+    color: var(--fe-body-color);
+    font-family: var(--fe-font);
+}
+
+/* تا ارتفاع کامل */
+main[role="main"] {
+    min-height: calc(100vh - 140px);
+}
+
+/* رنگ‌دهی عمومی به کلاس‌هایی که ممکن است تضاد بسازند */
+.bg-white {
+    background-color: var(--fe-surface-1) !important;
+    color: var(--fe-body-color) !important;
+}
+
+/* Navbar & footer */
+.navbar.bg-white {
+    background-color: var(--fe-surface-1) !important;
+    color: var(--fe-body-color) !important;
+    border-color: var(--fe-border) !important;
+}
+
+.navbar .nav-link {
+    color: var(--fe-body-color) !important;
+}
+
+    .navbar .nav-link:hover {
+        color: var(--fe-link) !important;
+    }
+
+.footer {
+    background-color: var(--fe-surface-1);
+    border-color: var(--fe-border) !important;
+    color: var(--fe-muted);
+}
+
+/* Links */
+a {
+    color: var(--fe-link);
+}
+
+    a:hover {
+        opacity: .9;
+    }
+
+/* Cards, dropdowns, modals, list items */
+.card, .list-group-item, .dropdown-menu, .modal-content {
+    background-color: var(--fe-surface-1);
+    color: var(--fe-body-color);
+    border-color: var(--fe-border);
+}
+
+/* Close button in dark */
+.btn-close {
+    filter: none;
+}
+
+:root[data-theme="dark"] .btn-close {
+    filter: invert(1);
+}
+
+/* Forms */
+.form-control, .form-select, .form-check-input {
+    background-color: var(--fe-surface-1);
+    color: var(--fe-body-color);
+    border-color: var(--fe-border);
+}
+
+    .form-control::placeholder {
+        color: var(--fe-muted);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--fe-link);
+        box-shadow: 0 0 0 .2rem rgba(13,110,253,.15);
+    }
+    /* وضعیت چک‌باکس/سوئیچ‌ها برای خوانایی بهتر */
+    .form-check-input:checked {
+        background-color: var(--fe-link);
+        border-color: var(--fe-link);
+    }
+
+/* Tables – default header like Users page */
+.table {
+    --bs-table-color: var(--fe-body-color);
+    --bs-table-bg: var(--fe-surface-1);
+    --bs-table-border-color: var(--fe-border);
+    color: var(--fe-body-color);
+    background-color: var(--fe-surface-1);
+    border-color: var(--fe-border);
+}
+
+    /* هدرها با کنتراست کافی */
+    .table thead th {
+        background-color: var(--fe-surface-2) !important;
+        color: var(--fe-body-color) !important;
+        font-weight: 700;
+        border-bottom: 2px solid rgba(13,110,253,.35);
+    }
+
+:root[data-theme="dark"] .table thead th {
+    background-color: #2a3342 !important; /* کمی روشن‌تر از سطح تیره برای وضوح متن */
+    color: #e6edf5 !important;
+}
+
+/* striped & hover */
+.table-striped > tbody > tr:nth-of-type(odd) {
+    --bs-table-accent-bg: var(--fe-surface-2); /* در لایت */
+}
+
+.table-hover > tbody > tr:hover {
+    background-color: var(--fe-row-hover) !important;
+}
+
+/* خوانایی سطرهای فرد در دارک‌مود */
+:root[data-theme="dark"] .table.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #1b2330 !important;
+    color: #e6edf5 !important;
+}
+
+:root[data-theme="dark"] .table {
+    --bs-table-striped-color: #e6edf5;
+    --bs-table-hover-color: #e6edf5;
+}
+
+    :root[data-theme="dark"] .table.table-striped > tbody > tr:nth-of-type(odd) a {
+        color: var(--fe-link);
+    }
+
+/* Sticky header (اختیاری) */
+.table.sticky-head thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+/* Toast container (partial _Toasts) */
+.toast-container .toast {
+    border-color: var(--fe-border);
+}
+
+/* Users page helpers (thead-primary) */
+.users-page .thead-primary th {
+    background-color: rgba(13,110,253,.12) !important;
+    color: var(--fe-body-color) !important;
+}
+
+:root[data-theme="dark"] .users-page .thead-primary th {
+    background-color: rgba(13,110,253,.25) !important;
+    color: #e6edf5 !important;
+}
+
+/* Borders everywhere */
+.border, .border-top, .border-bottom, .border-start, .border-end {
+    border-color: var(--fe-border) !important;
+}
+
+/* Smooth transitions */
+* {
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
